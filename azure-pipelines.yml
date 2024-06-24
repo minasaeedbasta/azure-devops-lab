@@ -17,6 +17,7 @@ stages:
       inputs:
         terraformVersion: 'latest'
     - script: |
+        cd infrastructure-terraform
         terraform init
         terraform plan
       displayName: 'Terraform Plan'
@@ -34,6 +35,7 @@ stages:
       inputs:
         terraformVersion: 'latest'
     - script: |
+        cd infrastructure-terraform
         terraform init
         terraform apply -auto-approve
       displayName: 'Terraform Apply'
