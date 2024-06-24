@@ -17,6 +17,7 @@ stages:
     - task: TerraformInstaller@1
       inputs:
         terraformVersion: 'latest'
+        
     - task: TerraformTaskV4@4
       inputs:
         provider: 'aws'
@@ -32,13 +33,13 @@ stages:
         provider: 'aws'
         command: 'plan'
         workingDirectory: '$(System.DefaultWorkingDirectory)/infrastructure-terraform'
-        commandOptions: '-var-file=”dev.tfvars”'
+        commandOptions: '-var-file="dev.tfvars"'
         environmentServiceNameAWS: 'aws_terraform'
       displayName: 'Terraform Plan'
-      
 
 - stage: Apply
   condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+  dependsOn: Plan
   jobs:
   - job: terraformApply
     pool:
@@ -63,6 +64,6 @@ stages:
         provider: 'aws'
         command: 'apply'
         workingDirectory: '$(System.DefaultWorkingDirectory)/infrastructure-terraform'
-        commandOptions: '-var-file=”dev.tfvars”'
+        commandOptions: '-var-file="dev.tfvars"'
         environmentServiceNameAWS: 'aws_terraform'
-      displayName: 'Terraform Apply'    
+      displayName: 'Terraform Apply'
