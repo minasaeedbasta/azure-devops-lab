@@ -58,5 +58,5 @@ rds = {
   engine_version    = "5.7"
   class             = "db.t3.micro"
   storage_type      = "gp2"
-  allocated_storage = 20
+  allocated_storage = 25
 }
