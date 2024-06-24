@@ -16,12 +16,24 @@ stages:
     - task: TerraformInstaller@1
       inputs:
         terraformVersion: 'latest'
-    - script: |
-        cd infrastructure-terraform
-        terraform init
-        terraform plan
+    - task: TerraformTaskV4@4
+      inputs:
+        provider: 'aws'
+        command: 'init'
+        workingDirectory: '$(System.DefaultWorkingDirectory)/infrastructure-terraform'
+        backendServiceAWS: 'aws_terraform'
+        backendAWSBucketName: 'terraform-state-mina-lab'
+        backendAWSKey: 'terraform.tfstate'
+      displayName: 'Terraform Init'
+      condition: eq(variables['Build.Reason'], 'PullRequest')
+    - task: TerraformTaskV4@4
+      inputs:
+        provider: 'aws'
+        command: 'plan'
+        workingDirectory: '$(System.DefaultWorkingDirectory)/infrastructure-terraform'
+        environmentServiceNameAWS: 'aws_terraform'
       displayName: 'Terraform Plan'
-    condition: eq(variables['Build.Reason'], 'PullRequest')
+      condition: eq(variables['Build.Reason'], 'PullRequest')
 
 - stage: Apply
   dependsOn: Plan
@@ -34,8 +46,22 @@ stages:
     - task: TerraformInstaller@1
       inputs:
         terraformVersion: 'latest'
-    - script: |
-        cd infrastructure-terraform
-        terraform init
-        terraform apply -auto-approve
+    
+    - task: TerraformTaskV4@4
+      inputs:
+        provider: 'aws'
+        command: 'init'
+        workingDirectory: '$(System.DefaultWorkingDirectory)/infrastructure-terraform'
+        backendServiceAWS: 'aws_terraform'
+        backendAWSBucketName: 'terraform-state-mina-lab'
+        backendAWSKey: 'terraform.tfstate'
+      displayName: 'Terraform Init'
+      condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+    - task: TerraformTaskV4@4
+      inputs:
+        provider: 'aws'
+        command: 'apply'
+        workingDirectory: '$(System.DefaultWorkingDirectory)/infrastructure-terraform'
+        environmentServiceNameAWS: 'aws_terraform'
       displayName: 'Terraform Apply'
+      condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
