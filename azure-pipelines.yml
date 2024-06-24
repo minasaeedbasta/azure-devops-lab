@@ -31,6 +31,7 @@ stages:
         provider: 'aws'
         command: 'plan'
         workingDirectory: '$(System.DefaultWorkingDirectory)/infrastructure-terraform'
+        commandOptions: '-var-file=”dev.tfvars”'
         environmentServiceNameAWS: 'aws_terraform'
       displayName: 'Terraform Plan'
       condition: eq(variables['Build.Reason'], 'PullRequest')
@@ -57,11 +58,14 @@ stages:
         backendAWSKey: 'terraform.tfstate'
       displayName: 'Terraform Init'
       condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+
     - task: TerraformTaskV4@4
       inputs:
         provider: 'aws'
         command: 'apply'
         workingDirectory: '$(System.DefaultWorkingDirectory)/infrastructure-terraform'
+        commandOptions: '-var-file=”dev.tfvars”'
         environmentServiceNameAWS: 'aws_terraform'
       displayName: 'Terraform Apply'
-      condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+      condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))    
+    
