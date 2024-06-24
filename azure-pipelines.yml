@@ -1,14 +1,39 @@
 trigger:
 - main
 
-pool:
-  name: my-pool
+pr:
+  branches:
+    include:
+    - '*'
 
-steps:
-- script: echo Hello, world!
-  displayName: 'Run a one-line script'
+stages:
+- stage: Plan
+  jobs:
+  - job: terraformPlan
+    pool:
+      name: 'my-pool'
+    steps:
+    - task: TerraformInstaller@1
+      inputs:
+        terraformVersion: 'latest'
+    - script: |
+        terraform init
+        terraform plan
+      displayName: 'Terraform Plan'
+    condition: eq(variables['Build.Reason'], 'PullRequest')
 
-- script: |
-    echo Add other tasks to build, test, and deploy your project.
-    echo See https://aka.ms/yaml
-  displayName: 'Run a multi-line script'
+- stage: Apply
+  dependsOn: Plan
+  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+  jobs:
+  - job: terraformApply
+    pool:
+      name: 'my-pool'
+    steps:
+    - task: TerraformInstaller@1
+      inputs:
+        terraformVersion: 'latest'
+    - script: |
+        terraform init
+        terraform apply -auto-approve
+      displayName: 'Terraform Apply'
